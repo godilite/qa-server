@@ -1,4 +1,4 @@
-# Klaus Test Task - Ticket Scoring Service
+# Zendesk Test Task - Ticket Scoring Service
 
 gRPC service for calculating ticket quality scores based on rating categories with configurable weights. Built with Go and uses the provided SQLite database.
 
@@ -63,13 +63,14 @@ graph TB
     class Docker,K8s infra
 ```
 
-## Requirements
+## System Requirements
 
 - Go 1.24+
 - Docker & Docker Compose  
 - protoc (Protocol Buffers compiler)
 - grpcurl for testing
-- mini
+- minikube (for Local Kubernetes deployment)
+
 
 ```bash
 # macOS setup
