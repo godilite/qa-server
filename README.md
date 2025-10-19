@@ -68,7 +68,7 @@ graph TB
 - Go 1.24+
 - Docker & Docker Compose  
 - protoc (Protocol Buffers compiler)
-- grpcurl for testing
+- grpcurl or postman for testing
 - minikube (for Local Kubernetes deployment)
 
 
