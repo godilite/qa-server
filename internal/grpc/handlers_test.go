@@ -280,7 +280,7 @@ func TestMapToProtoCategoryScores(t *testing.T) {
 		assert.Len(t, result, 1)
 		cat := result[0]
 		assert.Equal(t, "Tone", cat.CategoryName)
-		assert.Equal(t, int32(5), cat.TotalRatings)
+		assert.Equal(t, int64(5), cat.TotalRatings)
 		assert.Equal(t, 85.5, cat.OverallCategoryScore)
 		assert.Len(t, cat.PeriodScores, 0)
 	})
@@ -303,7 +303,7 @@ func TestMapToProtoCategoryScores(t *testing.T) {
 		assert.Len(t, result, 1)
 		cat := result[0]
 		assert.Equal(t, "Grammar", cat.CategoryName)
-		assert.Equal(t, int32(42), cat.TotalRatings)
+		assert.Equal(t, int64(42), cat.TotalRatings)
 		assert.Equal(t, 87.5, cat.OverallCategoryScore)
 		assert.Len(t, cat.PeriodScores, 2)
 
@@ -343,13 +343,13 @@ func TestMapToProtoCategoryScores(t *testing.T) {
 
 		// First category
 		assert.Equal(t, "Tone", result[0].CategoryName)
-		assert.Equal(t, int32(10), result[0].TotalRatings)
+		assert.Equal(t, int64(10), result[0].TotalRatings)
 		assert.Equal(t, 80.0, result[0].OverallCategoryScore)
 		assert.Len(t, result[0].PeriodScores, 1)
 
 		// Second category
 		assert.Equal(t, "GDPR", result[1].CategoryName)
-		assert.Equal(t, int32(8), result[1].TotalRatings)
+		assert.Equal(t, int64(8), result[1].TotalRatings)
 		assert.Equal(t, 95.0, result[1].OverallCategoryScore)
 		assert.Len(t, result[1].PeriodScores, 2)
 	})
@@ -371,7 +371,7 @@ func TestMapToProtoCategoryScores(t *testing.T) {
 		assert.Len(t, result, 1)
 		cat := result[0]
 		assert.Equal(t, "", cat.CategoryName)
-		assert.Equal(t, int32(0), cat.TotalRatings)
+		assert.Equal(t, int64(0), cat.TotalRatings)
 		assert.Equal(t, 0.0, cat.OverallCategoryScore)
 		assert.Len(t, cat.PeriodScores, 1)
 		assert.Equal(t, "", cat.PeriodScores[0].Period)
@@ -618,7 +618,7 @@ func TestSuccessfulCalls(t *testing.T) {
 
 		cat := resp.CategoryScores[0]
 		assert.Equal(t, "Tone", cat.CategoryName)
-		assert.Equal(t, int32(15), cat.TotalRatings)
+		assert.Equal(t, int64(15), cat.TotalRatings)
 		assert.Equal(t, 88.0, cat.OverallCategoryScore)
 		assert.Len(t, cat.PeriodScores, 2)
 	})

@@ -128,7 +128,7 @@ func TestE2E_GetAggregatedCategoryScores(t *testing.T) {
 		names = append(names, c.CategoryName)
 		// Each category should have a positive score and rating count
 		require.Greater(t, c.OverallCategoryScore, 0.0)
-		require.Greater(t, c.TotalRatings, int32(0))
+		require.Greater(t, c.TotalRatings, int64(0))
 	}
 	require.ElementsMatch(t, []string{"Tone", "Grammar", "GDPR"}, names)
 }
@@ -481,7 +481,7 @@ func TestE2E_FullWorkflow(t *testing.T) {
 		// Verify counts match category aggregation
 		for _, cat := range categoryResp.CategoryScores {
 			expectedCount := categoryRatingCounts[cat.CategoryName]
-			require.Equal(t, int32(expectedCount), cat.TotalRatings,
+			require.Equal(t, int64(expectedCount), cat.TotalRatings,
 				"Category %s rating count should match ticket aggregation", cat.CategoryName)
 		}
 	})
