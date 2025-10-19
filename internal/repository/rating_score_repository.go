@@ -9,12 +9,10 @@ import (
 	"github.com/godilite/qa-server/internal/repository/models"
 )
 
-// RatingScoreRepository implements the DataStorer interface for rating scores.
 type RatingScoreRepository struct {
 	db *sql.DB
 }
 
-// NewRatingScoreRepository is the constructor for our repository.
 func NewRatingScoreRepository(db *sql.DB) *RatingScoreRepository {
 	return &RatingScoreRepository{db: db}
 }

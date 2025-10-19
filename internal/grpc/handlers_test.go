@@ -116,7 +116,6 @@ func TestRequestValidation(t *testing.T) {
 
 		resp, err := handlers.GetOverallQualityScore(context.Background(), req)
 
-		// Based on the test results, same dates actually work
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, 85.5, resp.Score)

@@ -1,9 +1,9 @@
 name: 🚀 Deploy Ticket Quality Service to AWS EKS
 
-# on:
-#   push:
-#     branches: [ main ]
-#   workflow_dispatch:
+on:
+  push:
+    branches: [ release ]
+  workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}

@@ -94,8 +94,6 @@ func TestE2E_GetOverallQualityScore(t *testing.T) {
 	require.NoError(t, err, "Handler should not return error")
 	assert.Greater(t, resp.Score, 0.0, "Score should be positive")
 
-	// With our test data, we should get a reasonable score
-	// The calculation involves weighted averages across categories
 	assert.LessOrEqual(t, resp.Score, 100.0, "Score should not exceed 100")
 	assert.GreaterOrEqual(t, resp.Score, 50.0, "Score should be reasonable for test data")
 }
@@ -222,7 +220,7 @@ func TestE2E_PeriodOverPeriodWithProperData(t *testing.T) {
 
 	// Test with a 7-day period where we control the previous period data
 	start := testBaseDate
-	end := start.Add(7 * 24 * time.Hour) // 7 days
+	end := start.Add(7 * 24 * time.Hour)
 
 	// Add more data in the previous period (7 days before start)
 	previousStart := start.Add(-7 * 24 * time.Hour)
@@ -300,7 +298,6 @@ func TestE2E_PerformanceBaseline(t *testing.T) {
 	db := setupTestDB(t)
 	defer db.Close()
 
-	// Add more test data for performance testing
 	_, err := db.Exec(`
 		INSERT INTO ratings (ticket_id, rating, rating_category_id, created_at) VALUES
 		(401, 4, 1, '2025-01-01T10:00:00Z'),
@@ -337,7 +334,6 @@ func TestE2E_PerformanceBaseline(t *testing.T) {
 
 	const numCalls = 5 // Reduced for SQLite limitations
 
-	// Test sequential calls instead of concurrent to avoid SQLite concurrency issues
 	for i := 0; i < numCalls; i++ {
 		_, err := handler.GetOverallQualityScore(ctx, req)
 		require.NoError(t, err, "GetOverallQualityScore call %d should succeed", i+1)
