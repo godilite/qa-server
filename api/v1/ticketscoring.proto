@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package ticketscoring.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/godilite/qa-server/api/v1";
+
+
+message TimePeriodRequest {
+  google.protobuf.Timestamp start_date = 1;
+  google.protobuf.Timestamp end_date = 2;
+}
+
+message OverallQualityScoreResponse {
+  double score = 1;
+}
+
+message PeriodScore {
+  string period = 1;
+  double score = 2;
+}
+
+message TicketScore {
+  int64 ticket_id = 1;
+  map<string, double> category_scores = 2;
+}
+
+message ScoresByTicketResponse {
+  repeated TicketScore ticket_scores = 1;
+}
+
+message PeriodOverPeriodScoreChangeResponse {
+  double current_period_score = 1;
+  double previous_period_score = 2;
+  double change_percentage = 3;
+}
+
+message CategoryScore {
+  string category_name = 1;
+  int32 total_ratings = 2;
+  double overall_category_score = 3; 
+  repeated PeriodScore period_scores = 4; 
+}
+
+
+message AggregatedCategoryScoresResponse {
+  repeated CategoryScore category_scores = 1;
+}
+
+service TicketScoring {
+  rpc GetOverallQualityScore(TimePeriodRequest) returns (OverallQualityScoreResponse);
+  rpc GetAggregatedCategoryScores(TimePeriodRequest) returns (AggregatedCategoryScoresResponse);
+  rpc GetScoresByTicket(TimePeriodRequest) returns (ScoresByTicketResponse);
+  rpc GetPeriodOverPeriodScoreChange(TimePeriodRequest) returns (PeriodOverPeriodScoreChangeResponse);
+}

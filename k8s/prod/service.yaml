@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticket-quality-service
+spec:
+  selector:
+    app: ticket-quality-service
+  ports:
+    - protocol: TCP
+      port: 50051
+      targetPort: 50051
+  type: LoadBalancer

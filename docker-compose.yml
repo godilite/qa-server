@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: ticket-quality-service:dev
+    container_name: ticket-quality-service
+    environment:
+      - DB_PATH=${DB_PATH}
+      - REDIS_ADDR=${REDIS_ADDR}
+      - GRPC_PORT=${GRPC_PORT}
+      - APP_ENV=${APP_ENV}
+      - GRPC_REFLECTION_ENABLED=${GRPC_REFLECTION_ENABLED}
+    ports:
+      - "${GRPC_PORT}:${GRPC_PORT}"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  redis-data:

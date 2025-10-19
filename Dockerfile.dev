@@ -1,0 +1,17 @@
+FROM golang:1.24.4-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache build-base sqlite-dev ca-certificates
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+ENV CGO_ENABLED=1 GOOS=linux GOARCH=amd64
+RUN go build -o ticket-quality-service ./cmd/server
+
+EXPOSE 50051
+
+CMD ["./ticket-quality-service"]

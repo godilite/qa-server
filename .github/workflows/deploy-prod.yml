@@ -1,0 +1,70 @@
+name: 🚀 Deploy Ticket Quality Service to AWS EKS
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  IMAGE_TAG: latest
+  CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+
+jobs:
+  build-and-deploy:
+    name: Build, Push & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3️⃣ Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4️⃣ Build & push Docker image to ECR
+      - name: Build and push Docker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          echo "Building Docker image..."
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          echo "Pushing image to ECR..."
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      # 5️⃣ Update kubeconfig for EKS
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+
+      # 6️⃣ Deploy to EKS
+      - name: Deploy to EKS
+        run: |
+          echo "Updating Deployment image..."
+          kubectl set image deployment/ticket-quality-service \
+            ticket-quality-service=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --namespace default
+
+          echo "Applying Kubernetes manifests..."
+          kubectl apply -f k8s/prod/
+
+      # 7️⃣ Verify rollout
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/ticket-quality-service --timeout=90s
+          kubectl get pods -l app=ticket-quality-service

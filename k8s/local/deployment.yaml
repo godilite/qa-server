@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-quality-service
+  labels:
+    app: ticket-quality-service
+spec:
+  replicas: 1 # Start with 1 replica for ReadWriteOnce volumes unless using advanced storage
+  selector:
+    matchLabels:
+      app: ticket-quality-service
+  template:
+    metadata:
+      labels:
+        app: ticket-quality-service
+    spec:
+      containers:
+        - name: ticket-quality-service
+          image: ticket-quality-service:dev
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_PATH
+              value: "/data/database.db"
+            - name: REDIS_ADDR
+              value: "redis-service:6379"
+            - name: GRPC_PORT
+              value: "50051"
+            - name: APP_ENV
+              value: "production"
+            - name: GRPC_REFLECTION_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 50051
+              name: grpc
+          volumeMounts:
+            - name: db-storage 
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50051"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50051"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes: 
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: ticket-quality-db-pvc

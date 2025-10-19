@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-quality-service
+  labels:
+    app: ticket-quality-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ticket-quality-service
+  template:
+    metadata:
+      labels:
+        app: ticket-quality-service
+    spec:
+      containers:
+        - name: ticket-quality-service
+          image: 123456789012.dkr.ecr.eu-north-1.amazonaws.com/ticket-quality-service:latest
+          imagePullPolicy: Always
+          env:
+            - name: DB_PATH
+              value: "/data/database.db"
+            - name: REDIS_ADDR
+              value: "redis-service:6379"
+            - name: GRPC_PORT
+              value: "50051"
+            - name: APP_ENV
+              value: "production"
+          ports:
+            - containerPort: 50051
+              name: grpc
+          volumeMounts:
+            - name: db-storage
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: ticket-quality-db-pvc
