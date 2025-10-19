@@ -84,10 +84,10 @@ func TestRatingScoreRepository_Integration(t *testing.T) {
 	end := baseTime.Add(48 * time.Hour)
 
 	t.Run("GetOverallRatings", func(t *testing.T) {
-		score, count, err := repo.GetOverallRatings(ctx, start, end)
+		result, err := repo.GetOverallRatings(ctx, start, end)
 		require.NoError(t, err)
-		require.Greater(t, count, int64(0))
-		require.GreaterOrEqual(t, score, 0.0)
+		require.Greater(t, result.Count, int64(0))
+		require.GreaterOrEqual(t, result.Score, 0.0)
 	})
 
 	t.Run("GetRatingsInPeriod - daily", func(t *testing.T) {

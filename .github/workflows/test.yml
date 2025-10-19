@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -10,17 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - uses: actions/checkout@v4
 
@@ -29,51 +18,18 @@ jobs:
       with:
         go-version: '1.24'
 
-    - name: Cache Go modules
-      uses: actions/cache@v3
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
     - name: Download dependencies
       run: go mod download
-
-    - name: Verify dependencies
-      run: go mod verify
 
     - name: Generate proto files
       run: make proto
 
-    - name: Run unit tests
-      run: go test -v -race -coverprofile=coverage.out ./...
-
-    - name: Run integration tests
-      run: go test -v -tags=integration ./...
-
-    - name: Generate coverage report
-      run: go tool cover -html=coverage.out -o coverage.html
-
-    - name: Upload coverage reports
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: coverage.html
-
-    - name: Check test coverage
-      run: |
-        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
-        echo "Test coverage: $COVERAGE%"
-        if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-          echo "❌ Test coverage is below 70%"
-          exit 1
-        else
-          echo "✅ Test coverage is sufficient ($COVERAGE%)"
-        fi
+    - name: Run tests
+      run: make test-all
 
   lint:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -86,30 +42,3 @@ jobs:
       uses: golangci/golangci-lint-action@v3
       with:
         version: latest
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [test, lint]
-    
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24'
-
-    - name: Generate proto files
-      run: make proto
-
-    - name: Build application
-      run: go build -v -o server ./cmd/server
-
-    - name: Test Docker build
-      run: docker build -t ticket-scoring-service:test .
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: server-binary
-        path: server

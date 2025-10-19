@@ -53,19 +53,21 @@ func NewGRPCHandlers(scoring ScoringService, cache Cacher, logger *zap.Logger, t
 	}
 }
 
-func (s *GRPCHandlers) parseAndValidate(req *pb.TimePeriodRequest) (time.Time, time.Time, error) {
-	start := req.GetStartDate().AsTime()
-	end := req.GetEndDate().AsTime()
+func (s *GRPCHandlers) parseAndValidate(req *pb.TimePeriodRequest) (start, end time.Time, err error) {
+	start = req.GetStartDate().AsTime()
+	end = req.GetEndDate().AsTime()
 
 	if start.IsZero() || end.IsZero() {
-		return time.Time{}, time.Time{}, status.Error(codes.InvalidArgument, "start and end dates are required")
+		err = status.Error(codes.InvalidArgument, "start and end dates are required")
+		return
 	}
 
 	if end.Before(start) {
-		return time.Time{}, time.Time{}, status.Error(codes.InvalidArgument, "end date must be after start date")
+		err = status.Error(codes.InvalidArgument, "end date must be after start date")
+		return
 	}
 
-	return start, end, nil
+	return
 }
 
 func normalizeKey(prefix CacheKeyType, start, end time.Time) string {
@@ -206,7 +208,7 @@ func (s *GRPCHandlers) mapToProtoCategoryScores(scores []service.AggregatedCateg
 		}
 		out[i] = &pb.CategoryScore{
 			CategoryName:         cat.CategoryName,
-			TotalRatings:         int32(cat.TotalRatings),
+			TotalRatings:         int64(cat.TotalRatings),
 			OverallCategoryScore: cat.OverallCategoryScore,
 			PeriodScores:         periods,
 		}

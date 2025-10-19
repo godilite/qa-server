@@ -93,7 +93,9 @@ func FindAndCache[T any](ctx context.Context, cache *Cache, key string, cacheDur
 					log.Printf("background fetch failed: %v", err)
 					return
 				}
-				cache.Set(context.Background(), key, result, cacheDuration)
+				if err := cache.Set(context.Background(), key, result, cacheDuration); err != nil {
+					log.Printf("background cache set failed: %v", err)
+				}
 			}()
 
 			return cached, nil

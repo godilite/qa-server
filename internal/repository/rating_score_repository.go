@@ -20,7 +20,7 @@ func NewRatingScoreRepository(db *sql.DB) *RatingScoreRepository {
 }
 
 // GetOverallRatings fetches all raw ratings and weights within a date range.
-func (s *RatingScoreRepository) GetOverallRatings(ctx context.Context, start, end time.Time) (float64, int64, error) {
+func (s *RatingScoreRepository) GetOverallRatings(ctx context.Context, start, end time.Time) (models.OverallRatingResult, error) {
 	const query = `
     SELECT
       SUM(CAST(r.rating AS REAL) * 20.0 * rc.weight),
@@ -32,22 +32,27 @@ func (s *RatingScoreRepository) GetOverallRatings(ctx context.Context, start, en
     `
 
 	var totalWeighted, totalWeight sql.NullFloat64
-	var count sql.NullInt64
+	var rowCount sql.NullInt64
 
-	err := s.db.QueryRowContext(ctx, query, start, end).Scan(&totalWeighted, &totalWeight, &count)
+	err := s.db.QueryRowContext(ctx, query, start, end).Scan(&totalWeighted, &totalWeight, &rowCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, 0, nil
+			return models.OverallRatingResult{}, nil
 		}
-		return 0, 0, fmt.Errorf("query GetOverallScore: %w", err)
+		return models.OverallRatingResult{}, fmt.Errorf("query GetOverallScore: %w", err)
 	}
 
 	if !totalWeight.Valid || totalWeight.Float64 == 0 {
-		return 0, count.Int64, nil
+		return models.OverallRatingResult{
+			Score: 0,
+			Count: rowCount.Int64,
+		}, nil
 	}
 
-	finalScore := totalWeighted.Float64 / totalWeight.Float64
-	return finalScore, count.Int64, nil
+	return models.OverallRatingResult{
+		Score: totalWeighted.Float64 / totalWeight.Float64,
+		Count: rowCount.Int64,
+	}, nil
 }
 
 // GetRatingsInPeriod aggregates ratings by category and daily or weekly period.

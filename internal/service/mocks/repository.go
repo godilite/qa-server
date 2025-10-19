@@ -11,17 +11,17 @@ import (
 // MockRatingScoreRepository is a mock implementation of the RatingScoreRepository interface
 // for testing the service layer.
 type MockRatingScoreRepository struct {
-	GetOverallRatingsFunc  func(ctx context.Context, start, end time.Time) (float64, int64, error)
+	GetOverallRatingsFunc  func(ctx context.Context, start, end time.Time) (models.OverallRatingResult, error)
 	GetRatingsInPeriodFunc func(ctx context.Context, start, end time.Time, isWeekly bool) ([]models.AggregatedCategoryData, error)
 	GetScoresByTicketFunc  func(ctx context.Context, start, end time.Time) ([]models.TicketCategoryScore, error)
 }
 
 // GetOverallRatings implements the RatingScoreRepository interface
-func (m *MockRatingScoreRepository) GetOverallRatings(ctx context.Context, start, end time.Time) (float64, int64, error) {
+func (m *MockRatingScoreRepository) GetOverallRatings(ctx context.Context, start, end time.Time) (models.OverallRatingResult, error) {
 	if m.GetOverallRatingsFunc != nil {
 		return m.GetOverallRatingsFunc(ctx, start, end)
 	}
-	return 0, 0, errors.New("GetOverallRatingsFunc not implemented")
+	return models.OverallRatingResult{}, errors.New("GetOverallRatingsFunc not implemented")
 }
 
 // GetRatingsInPeriod implements the RatingScoreRepository interface

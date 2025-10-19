@@ -18,3 +18,8 @@ type AggregatedCategoryData struct {
 	TotalWeight             float64
 	EvaluationCount         int
 }
+
+type OverallRatingResult struct {
+	Score float64
+	Count int64
+}

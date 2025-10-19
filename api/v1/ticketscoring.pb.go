@@ -329,7 +329,7 @@ func (x *PeriodOverPeriodScoreChangeResponse) GetChangePercentage() float64 {
 type CategoryScore struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	CategoryName         string                 `protobuf:"bytes,1,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	TotalRatings         int32                  `protobuf:"varint,2,opt,name=total_ratings,json=totalRatings,proto3" json:"total_ratings,omitempty"`
+	TotalRatings         int64                  `protobuf:"varint,2,opt,name=total_ratings,json=totalRatings,proto3" json:"total_ratings,omitempty"`
 	OverallCategoryScore float64                `protobuf:"fixed64,3,opt,name=overall_category_score,json=overallCategoryScore,proto3" json:"overall_category_score,omitempty"`
 	PeriodScores         []*PeriodScore         `protobuf:"bytes,4,rep,name=period_scores,json=periodScores,proto3" json:"period_scores,omitempty"`
 	unknownFields        protoimpl.UnknownFields
@@ -373,7 +373,7 @@ func (x *CategoryScore) GetCategoryName() string {
 	return ""
 }
 
-func (x *CategoryScore) GetTotalRatings() int32 {
+func (x *CategoryScore) GetTotalRatings() int64 {
 	if x != nil {
 		return x.TotalRatings
 	}
@@ -466,7 +466,7 @@ const file_api_v1_ticketscoring_proto_rawDesc = "" +
 	"\x11change_percentage\x18\x03 \x01(\x01R\x10changePercentage\"\xd3\x01\n" +
 	"\rCategoryScore\x12#\n" +
 	"\rcategory_name\x18\x01 \x01(\tR\fcategoryName\x12#\n" +
-	"\rtotal_ratings\x18\x02 \x01(\x05R\ftotalRatings\x124\n" +
+	"\rtotal_ratings\x18\x02 \x01(\x03R\ftotalRatings\x124\n" +
 	"\x16overall_category_score\x18\x03 \x01(\x01R\x14overallCategoryScore\x12B\n" +
 	"\rperiod_scores\x18\x04 \x03(\v2\x1d.ticketscoring.v1.PeriodScoreR\fperiodScores\"l\n" +
 	" AggregatedCategoryScoresResponse\x12H\n" +

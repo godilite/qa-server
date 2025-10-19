@@ -52,10 +52,10 @@ func TestGetOverallScore(t *testing.T) {
 
 	t.Run("successful calculation", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				assert.Equal(t, start, s)
 				assert.Equal(t, end, e)
-				return 85.5, 100, nil
+				return models.OverallRatingResult{Score: 85.5, Count: 100}, nil
 			},
 		}
 
@@ -68,8 +68,8 @@ func TestGetOverallScore(t *testing.T) {
 
 	t.Run("no ratings found", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
-				return 0, 0, nil
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
+				return models.OverallRatingResult{Score: 0, Count: 0}, nil
 			},
 		}
 
@@ -82,8 +82,8 @@ func TestGetOverallScore(t *testing.T) {
 
 	t.Run("storage failure", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
-				return 0, 0, errors.New("database connection failed")
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
+				return models.OverallRatingResult{}, errors.New("database connection failed")
 			},
 		}
 
@@ -277,16 +277,16 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("positive change", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				// Current period
 				if s.Equal(start) && e.Equal(end) {
-					return 90.0, 100, nil
+					return models.OverallRatingResult{Score: 90.0, Count: 100}, nil
 				}
 				// Previous period
 				if s.Equal(expectedPrevStart) && e.Equal(expectedPrevEnd) {
-					return 80.0, 90, nil
+					return models.OverallRatingResult{Score: 80.0, Count: 90}, nil
 				}
-				return 0, 0, errors.New("unexpected time range")
+				return models.OverallRatingResult{}, errors.New("unexpected time range")
 			},
 		}
 
@@ -301,14 +301,14 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("negative change", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				if s.Equal(start) && e.Equal(end) {
-					return 70.0, 100, nil
+					return models.OverallRatingResult{Score: 70.0, Count: 100}, nil
 				}
 				if s.Equal(expectedPrevStart) && e.Equal(expectedPrevEnd) {
-					return 80.0, 90, nil
+					return models.OverallRatingResult{Score: 80.0, Count: 90}, nil
 				}
-				return 0, 0, errors.New("unexpected time range")
+				return models.OverallRatingResult{}, errors.New("unexpected time range")
 			},
 		}
 
@@ -323,14 +323,14 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("no previous ratings", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				if s.Equal(start) && e.Equal(end) {
-					return 90.0, 100, nil
+					return models.OverallRatingResult{Score: 90.0, Count: 100}, nil
 				}
 				if s.Equal(expectedPrevStart) && e.Equal(expectedPrevEnd) {
-					return 0, 0, nil
+					return models.OverallRatingResult{Score: 0, Count: 0}, nil
 				}
-				return 0, 0, errors.New("unexpected time range")
+				return models.OverallRatingResult{}, errors.New("unexpected time range")
 			},
 		}
 
@@ -345,11 +345,11 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("current period failure", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				if s.Equal(start) && e.Equal(end) {
-					return 0, 0, errors.New("db connection failed")
+					return models.OverallRatingResult{}, errors.New("db connection failed")
 				}
-				return 0, 0, nil
+				return models.OverallRatingResult{Score: 0, Count: 0}, nil
 			},
 		}
 
@@ -364,14 +364,14 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("previous period storage failure", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				if s.Equal(start) && e.Equal(end) {
-					return 90.0, 100, nil
+					return models.OverallRatingResult{Score: 90.0, Count: 100}, nil
 				}
 				if s.Equal(expectedPrevStart) && e.Equal(expectedPrevEnd) {
-					return 0, 0, errors.New("db timeout")
+					return models.OverallRatingResult{}, errors.New("db timeout")
 				}
-				return 0, 0, errors.New("unexpected time range")
+				return models.OverallRatingResult{}, errors.New("unexpected time range")
 			},
 		}
 
@@ -386,14 +386,14 @@ func TestGetPeriodOverPeriodScoreChange(t *testing.T) {
 
 	t.Run("zero previous score with positive current", func(t *testing.T) {
 		mockRepo := &mocks.MockRatingScoreRepository{
-			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (float64, int64, error) {
+			GetOverallRatingsFunc: func(ctx context.Context, s, e time.Time) (models.OverallRatingResult, error) {
 				if s.Equal(start) && e.Equal(end) {
-					return 50.0, 100, nil
+					return models.OverallRatingResult{Score: 50.0, Count: 100}, nil
 				}
 				if s.Equal(expectedPrevStart) && e.Equal(expectedPrevEnd) {
-					return 0.0, 0, nil
+					return models.OverallRatingResult{Score: 0.0, Count: 0}, nil
 				}
-				return 0, 0, errors.New("unexpected time range")
+				return models.OverallRatingResult{}, errors.New("unexpected time range")
 			},
 		}
 

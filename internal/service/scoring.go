@@ -63,21 +63,21 @@ func (s *ScoringService) GetOverallScore(ctx context.Context, start, end time.Ti
 	dbCtx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 
-	score, count, err := s.storage.GetOverallRatings(dbCtx, start, end)
+	result, err := s.storage.GetOverallRatings(dbCtx, start, end)
 	if err != nil {
 		return 0, fmt.Errorf("%w: %v", ErrStorageFailure, err)
 	}
-	if count == 0 {
+	if result.Count == 0 {
 		return 0, ErrNoRatings
 	}
 
 	s.logger.Info("fetched overall score",
-		zap.Float64("score", score),
-		zap.Int64("ratings", count),
+		zap.Float64("score", result.Score),
+		zap.Int64("count", result.Count),
 		zap.Time("start", start),
 		zap.Time("end", end))
 
-	return score, nil
+	return result.Score, nil
 }
 
 // GetAggregatedCategoryScores returns per-category (daily or weekly) aggregates.

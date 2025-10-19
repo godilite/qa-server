@@ -38,7 +38,7 @@ message PeriodOverPeriodScoreChangeResponse {
 
 message CategoryScore {
   string category_name = 1;
-  int32 total_ratings = 2;
+  int64 total_ratings = 2;
   double overall_category_score = 3; 
   repeated PeriodScore period_scores = 4; 
 }
