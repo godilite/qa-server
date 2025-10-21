@@ -89,7 +89,9 @@ func (a *App) Run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	a.grpcServer.Stop()
+	if err := a.grpcServer.Shutdown(ctx); err != nil {
+		a.logger.Error("gRPC server shutdown error", zap.Error(err))
+	}
 
 	if err := a.cache.Close(); err != nil {
 		a.logger.Error("cache shutdown error", zap.Error(err))
