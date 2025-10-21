@@ -52,16 +52,15 @@ func WithRetry(attempts int, delay time.Duration) Option {
 
 // New creates a new database connection pool using the provided options.
 func New(opts ...Option) (*sql.DB, error) {
-	// Set production-ready defaults
 	options := &Options{
 		Driver:          "sqlite3",
 		DataSource:      ":memory:",
-		MaxOpenConns:    25,              // Reasonable default for most apps
-		MaxIdleConns:    5,               // Keep some connections ready
-		ConnMaxLifetime: 5 * time.Minute, // Rotate connections regularly
-		ConnMaxIdleTime: 2 * time.Minute, // Close idle connections
-		RetryAttempts:   3,               // Retry connection attempts
-		RetryDelay:      time.Second,     // Wait between retries
+		MaxOpenConns:    25,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: 5 * time.Minute,
+		ConnMaxIdleTime: 2 * time.Minute,
+		RetryAttempts:   3,
+		RetryDelay:      time.Second,
 	}
 
 	for _, opt := range opts {
@@ -89,16 +88,14 @@ func New(opts ...Option) (*sql.DB, error) {
 			db.SetConnMaxLifetime(options.ConnMaxLifetime)
 			db.SetConnMaxIdleTime(options.ConnMaxIdleTime)
 
-			// Test connection
 			if err = db.Ping(); err == nil {
-				return db, nil // Success!
+				return db, nil
 			}
 
 			// Close failed connection
 			db.Close()
 		}
 
-		// Wait before retry (exponential backoff)
 		if i < options.RetryAttempts-1 {
 			waitTime := time.Duration(i+1) * options.RetryDelay
 			time.Sleep(waitTime)
