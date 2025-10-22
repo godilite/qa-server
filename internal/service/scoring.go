@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	dbTimeout = 3 * time.Second
+	dbTimeout = 1 * time.Second
 )
 
 // ScoringService handles rating aggregation and scoring.
@@ -110,13 +110,9 @@ func (s *ScoringService) GetAggregatedCategoryScores(ctx context.Context, start,
 			}
 		}
 
-		var periodScore float64
-		if r.TotalWeight > 0 {
-			periodScore = (r.TotalWeightedEvaluation * 20.0) / r.TotalWeight
-		}
 		resultsMap[c].PeriodScores = append(resultsMap[c].PeriodScores, PeriodScore{
 			Period: r.Period,
-			Score:  periodScore,
+			Score:  r.PeriodScore,
 		})
 		resultsMap[c].TotalRatings += r.EvaluationCount
 
