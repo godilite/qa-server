@@ -40,7 +40,11 @@ func WithDB(db int) Option {
 }
 
 func New(ctx context.Context, opts ...Option) (*Cache, error) {
-	options := &Options{}
+	options := &Options{
+		Address:  "localhost:6379",
+		Password: "",
+		DB:       0,
+	}
 
 	for _, opt := range opts {
 		opt(options)

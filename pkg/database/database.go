@@ -12,6 +12,9 @@ type Options struct {
 	MaxOpenConns    int
 	MaxIdleConns    int
 	ConnMaxLifetime time.Duration
+	ConnMaxIdleTime time.Duration
+	RetryAttempts   int
+	RetryDelay      time.Duration
 }
 
 type Option func(*Options)
@@ -28,26 +31,76 @@ func WithMaxOpenConns(count int) Option {
 	return func(o *Options) { o.MaxOpenConns = count }
 }
 
+func WithMaxIdleConns(count int) Option {
+	return func(o *Options) { o.MaxIdleConns = count }
+}
+
+func WithConnMaxLifetime(duration time.Duration) Option {
+	return func(o *Options) { o.ConnMaxLifetime = duration }
+}
+
+func WithConnMaxIdleTime(duration time.Duration) Option {
+	return func(o *Options) { o.ConnMaxIdleTime = duration }
+}
+
+func WithRetry(attempts int, delay time.Duration) Option {
+	return func(o *Options) {
+		o.RetryAttempts = attempts
+		o.RetryDelay = delay
+	}
+}
+
 // New creates a new database connection pool using the provided options.
 func New(opts ...Option) (*sql.DB, error) {
-	options := &Options{}
+	options := &Options{
+		Driver:          "sqlite3",
+		DataSource:      ":memory:",
+		MaxOpenConns:    25,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: 5 * time.Minute,
+		ConnMaxIdleTime: 2 * time.Minute,
+		RetryAttempts:   3,
+		RetryDelay:      time.Second,
+	}
 
 	for _, opt := range opts {
 		opt(options)
 	}
 
-	db, err := sql.Open(options.Driver, options.DataSource)
-	if err != nil {
-		return nil, fmt.Errorf("open database: %w", err)
+	// Validate options
+	if options.Driver == "" {
+		return nil, fmt.Errorf("database driver cannot be empty")
+	}
+	if options.DataSource == "" {
+		return nil, fmt.Errorf("database data source cannot be empty")
 	}
 
-	db.SetMaxOpenConns(options.MaxOpenConns)
-	db.SetMaxIdleConns(options.MaxIdleConns)
-	db.SetConnMaxLifetime(options.ConnMaxLifetime)
+	var db *sql.DB
+	var err error
 
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("ping database: %w", err)
+	// Retry connection with exponential backoff
+	for i := 0; i < options.RetryAttempts; i++ {
+		db, err = sql.Open(options.Driver, options.DataSource)
+		if err == nil {
+			// Configure connection pool
+			db.SetMaxOpenConns(options.MaxOpenConns)
+			db.SetMaxIdleConns(options.MaxIdleConns)
+			db.SetConnMaxLifetime(options.ConnMaxLifetime)
+			db.SetConnMaxIdleTime(options.ConnMaxIdleTime)
+
+			if err = db.Ping(); err == nil {
+				return db, nil
+			}
+
+			// Close failed connection
+			db.Close()
+		}
+
+		if i < options.RetryAttempts-1 {
+			waitTime := time.Duration(i+1) * options.RetryDelay
+			time.Sleep(waitTime)
+		}
 	}
 
-	return db, nil
+	return nil, fmt.Errorf("failed to connect to database after %d attempts: %w", options.RetryAttempts, err)
 }

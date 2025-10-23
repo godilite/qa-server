@@ -14,6 +14,7 @@ type TicketCategoryScore struct {
 type AggregatedCategoryData struct {
 	Category                string
 	Period                  string
+	PeriodScore             float64
 	TotalWeightedEvaluation float64
 	TotalWeight             float64
 	EvaluationCount         int
